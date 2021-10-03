@@ -14,7 +14,8 @@ func Test_PolicyEval(t *testing.T) {
 		policyRule []string
 		want       bool
 	}{
-		{name: "test policy deny pod name", data: "./fixture/pod.json", pkgName: "example", policyRule: []string{"deny"}, policy: "./fixture/pod_policy_deny", want: true},
+		{name: "test policy deny pod name json format", data: "./fixture/pod.json", pkgName: "example", policyRule: []string{"deny"}, policy: "./fixture/pod_policy_deny", want: true},
+		{name: "test policy deny pod name yaml format", data: "./fixture/pod.yaml", pkgName: "example", policyRule: []string{"deny"}, policy: "./fixture/pod_policy_deny", want: true},
 		{name: "test policy allow pod name", data: "./fixture/allow_pod.json", pkgName: "example", policyRule: []string{"deny"}, policy: "./fixture/pod_policy_deny", want: false},
 	}
 	for _, tt := range tests {

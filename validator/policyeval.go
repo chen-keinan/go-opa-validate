@@ -1,9 +1,7 @@
 package validator
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
@@ -27,15 +25,22 @@ func NewPolicyEval() Evaluator {
 // return evaluation result in a bool form
 func (pe policyEval) EvaluatePolicy(pkgName string, policyRule []string, policy string, data string) ([]bool, error) {
 	ctx := context.Background()
-	d := json.NewDecoder(bytes.NewBufferString(data))
-	// Numeric values must be represented using json.Number.
-	d.UseNumber()
-
-	var input interface{}
-	if err := d.Decode(&input); err != nil {
-		panic(err)
+	var inputObject interface{}
+	// try to read data as json format
+	inputObject, err := ParseJSON(data)
+	if err != nil {
+		var convertedJSON []byte
+		// try to read data as yaml format and convert it to json
+		convertedJSON, err = YamlToJSON(data)
+		if err != nil {
+			return nil, err
+		}
+		// read data as yaml format
+		inputObject, err = ParseJSON(string(convertedJSON))
+		if err != nil {
+			return nil, err
+		}
 	}
-
 	// Compile the module. The keys are used as identifiers in error messages.
 	compiler, err := ast.CompileModules(map[string]string{
 		fmt.Sprintf("%s.rego", pkgName): policy,
@@ -48,7 +53,7 @@ func (pe policyEval) EvaluatePolicy(pkgName string, policyRule []string, policy 
 		regoFunc = append(regoFunc, rego.Query(fmt.Sprintf("data.%s.%s", pkgName, pr)))
 	}
 	regoFunc = append(regoFunc, rego.Compiler(compiler))
-	regoFunc = append(regoFunc, rego.Input(input))
+	regoFunc = append(regoFunc, rego.Input(inputObject))
 	rego := rego.New(regoFunc...)
 	res, err := rego.Eval(ctx)
 	if err != nil {
