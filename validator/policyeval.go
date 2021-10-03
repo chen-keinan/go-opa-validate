@@ -9,14 +9,65 @@ import (
 	"github.com/open-policy-agent/opa/rego"
 )
 
-func PolicyEval() {
+type Evaluator interface {
+	EvaluatePolicy(pkgName string, policyRule []string, policy string, data string) ([]bool,error)
+}
+
+type policyEval struct {
+}
+
+func NewPolicyEval() Evaluator {
+	return &policyEval{}
+}
+
+func (pe policyEval) EvaluatePolicy(pkgName string, policyRule []string, policy string, data string) ([]bool,error) {
+	ctx := context.Background()
+	/*err:=json.NewEncoder(bytes.NewBufferString(data)).Encode(raw)
+	if err != nil{
+		return nil,err
+	}
+*/
+	d := json.NewDecoder(bytes.NewBufferString(data))
+
+	// Numeric values must be represented using json.Number.
+	d.UseNumber()
+
+	var input interface{}
+
+	if err := d.Decode(&input); err != nil {
+		panic(err)
+	}
+
+
+	// Compile the module. The keys are used as identifiers in error messages.
+	compiler, err := ast.CompileModules(map[string]string{
+		fmt.Sprintf("%s.rego",pkgName): policy,
+	})
+	if err != nil {
+		return nil,err
+	}
+	regoFunc:=make([]func(r *rego.Rego),0)
+	for _,pr:=range policyRule{
+		regoFunc = append(regoFunc,rego.Query(fmt.Sprintf("data.%s.%s",pkgName,pr)))
+	}
+	regoFunc = append(regoFunc,rego.Compiler(compiler))
+	regoFunc = append(regoFunc,rego.Input(input))
+	rego := rego.New(regoFunc...)
+	res,err:=rego.Eval(ctx)
+	if err != nil {
+		return nil,err
+	}
+	return []bool{res[0].Expressions[0].Value.(bool)},nil
+}
+
+func Eval() []string {
 
 	ctx := context.Background()
 
 	// Define a simple policy.
 	module := `package example
-default deny = false
-deny {
+default deny = true
+allow {
 	some i
 	input.request.kind.kind == "Pod"
 	image := input.request.object.spec.containers[i].image
@@ -76,10 +127,11 @@ deny {
 
 	// Inspect results.
 	fmt.Println("len:", len(rs))
-	fmt.Println("value:", rs[0].Expressions[0].Value)
+	fmt.Println("value:", rs.Allowed())
 
 	// Output:
 	//
 	// len: 1
 	// value: true
+	return []string{}
 }
