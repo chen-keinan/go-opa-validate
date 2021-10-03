@@ -1,0 +1,22 @@
+{
+  "kind": "AdmissionReview",
+  "request": {
+    "kind": {
+      "kind": "Pod",
+      "version": "v1"
+    },
+    "object": {
+      "metadata": {
+        "name": "myapp"
+      },
+      "spec": {
+        "containers": [
+          {
+            "image": "hooli.com/mysql",
+            "name": "mysql-backend"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,48 +1,39 @@
 package validator
 
 import (
-	"fmt"
+	"io/ioutil"
 	"testing"
 )
 
-var policy = `package example
-default deny = false
-deny {
-	some i
-	input.request.kind.kind == "Pod"
-	image := input.request.object.spec.containers[i].image
-	not startswith(image, "hooli.com/")
-}`
-
-var data = `{
-    "kind": "AdmissionReview",
-    "request": {
-        "kind": {
-            "kind": "Pod",
-            "version": "v1"
-        },
-        "object": {
-            "metadata": {
-                "name": "myapp"
-            },
-            "spec": {
-                "containers": [
-                    {
-                        "image": "mysql",
-                        "name": "mysql-backend"
-                    }
-                ]
-            }
-        }
-    }
-}`
-
 func Test_PolicyEval(t *testing.T) {
-	res, err := NewPolicyEval().EvaluatePolicy("example", []string{"deny"}, policy, data)
-	if err != nil {
-		t.Error(err)
+	tests := []struct {
+		name       string
+		data       string
+		policy     string
+		pkgName    string
+		policyRule []string
+		want       bool
+	}{
+		{name: "test policy deny pod name", data: "./fixture/pod.json", pkgName: "example", policyRule: []string{"deny"}, policy: "./fixture/pod_policy_deny", want: true},
+		{name: "test policy allow pod name", data: "./fixture/allow_pod.json", pkgName: "example", policyRule: []string{"deny"}, policy: "./fixture/pod_policy_deny", want: false},
 	}
-	if res[0] == true {
-		fmt.Println("policy match")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data, err := ioutil.ReadFile(tt.data)
+			if err != nil {
+				t.Fatal(err)
+			}
+			policy, err := ioutil.ReadFile(tt.policy)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got, err := NewPolicyEval().EvaluatePolicy("example", []string{"deny"}, string(policy), string(data))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got[0] != tt.want {
+				t.Errorf("Test_PolicyEval() = %v, want %v", got[0], tt.want)
+			}
+		})
 	}
 }
