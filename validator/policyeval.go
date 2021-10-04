@@ -1,15 +1,19 @@
 package validator
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
+	"io/ioutil"
+	"strings"
 )
 
 //Evaluator OPA evaluate interface
 type Evaluator interface {
-	EvaluatePolicy(pkgName string, policyRule []string, policy string, data string) ([]*ValidateResult, error)
+	EvaluatePolicy(evalProperty []string, policy string, data string) ([]*ValidateResult, error)
 }
 
 //policyEval opa evaluate object
@@ -23,7 +27,20 @@ func NewPolicyEval() Evaluator {
 
 //EvaluatePolicy evaluate opa policy against given json input , accept opa pkg name ,policy rule(deny/allow),policy and input data
 // return evaluation result in a bool form
-func (pe policyEval) EvaluatePolicy(pkgName string, policyRule []string, policy string, data string) ([]*ValidateResult, error) {
+func (pe policyEval) EvaluatePolicy(evalProperty []string, policy string, data string) ([]*ValidateResult, error) {
+	var pkgName string
+	const policyPackage = "package"
+	reader := ioutil.NopCloser(bytes.NewReader([]byte(policy)))
+	defer reader.Close()
+	scanner := bufio.NewScanner(reader)
+	// optionally, resize scanner's capacity for lines over 64K, see next example
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, policyPackage) {
+			pkgName = strings.TrimSpace(strings.Replace(line, policyPackage, "", -1))
+			break
+		}
+	}
 	ctx := context.Background()
 	var inputObject interface{}
 	// try to read data as json format
@@ -49,8 +66,12 @@ func (pe policyEval) EvaluatePolicy(pkgName string, policyRule []string, policy 
 		return nil, err
 	}
 	regoFunc := make([]func(r *rego.Rego), 0)
-	for _, pr := range policyRule {
-		regoFunc = append(regoFunc, rego.Query(fmt.Sprintf("data.%s.%s", pkgName, pr)))
+	for _, pr := range evalProperty {
+		if len(pkgName) > 0 {
+			regoFunc = append(regoFunc, rego.Query(fmt.Sprintf("data.%s.%s", pkgName, pr)))
+		} else {
+			regoFunc = append(regoFunc, rego.Query(policy))
+		}
 	}
 	regoFunc = append(regoFunc, rego.Compiler(compiler))
 	regoFunc = append(regoFunc, rego.Input(inputObject))
