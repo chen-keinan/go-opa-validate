@@ -18,7 +18,8 @@
 go get github.com/chen-keinan/opa-policy-validate
 ```
 
-## Usage (support json and yaml formats)
+## Usage 
+#### (support json and yaml formats)
 #### json data example: data.json
 ```json
 {
