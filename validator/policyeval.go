@@ -28,19 +28,7 @@ func NewPolicyEval() Evaluator {
 //EvaluatePolicy evaluate opa policy against given json input , accept opa pkg name ,policy rule(deny/allow),policy and input data
 // return evaluation result in a bool form
 func (pe policyEval) EvaluatePolicy(evalProperty []string, policy string, data string) ([]*ValidateResult, error) {
-	var pkgName string
-	const policyPackage = "package"
-	reader := ioutil.NopCloser(bytes.NewReader([]byte(policy)))
-	defer reader.Close()
-	scanner := bufio.NewScanner(reader)
-	// optionally, resize scanner's capacity for lines over 64K, see next example
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, policyPackage) {
-			pkgName = strings.TrimSpace(strings.Replace(line, policyPackage, "", -1))
-			break
-		}
-	}
+	pkgName := pe.detectPkgName(policy)
 	ctx := context.Background()
 	var inputObject interface{}
 	// try to read data as json format
@@ -85,6 +73,28 @@ func (pe policyEval) EvaluatePolicy(evalProperty []string, policy string, data s
 		validateResult = append(validateResult, &ValidateResult{Value: res[0].Expressions[0].Value.(bool), ValidateProperty: res[0].Expressions[0].Text})
 	}
 	return validateResult, nil
+}
+
+func (pe policyEval) detectPkgName(policy string) string {
+	var pkgName string
+	const policyPackage = "package"
+	reader := ioutil.NopCloser(bytes.NewReader([]byte(policy)))
+	defer func() {
+		err := reader.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+	scanner := bufio.NewScanner(reader)
+	// optionally, resize scanner's capacity for lines over 64K, see next example
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, policyPackage) {
+			pkgName = strings.TrimSpace(strings.Replace(line, policyPackage, "", -1))
+			break
+		}
+	}
+	return pkgName
 }
 
 //ValidateResult opa validation results
