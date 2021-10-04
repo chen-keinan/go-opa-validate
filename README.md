@@ -6,6 +6,7 @@
 
 # opa-policy-validate
 
+opa-policy-validate is an open source lib who evaluate OPA (open policy agent) license against json or yaml data.
 
 * [Installation](#installation)
 * [Usage](#usage)
