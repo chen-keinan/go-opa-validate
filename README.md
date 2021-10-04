@@ -18,7 +18,7 @@ go get github.com/chen-keinan/opa-policy-validate
 ```
 
 ## Usage (support json and yaml formats)
-### json data example: data.json
+#### json data example: data.json
 ```json
 {
   "kind": "AdmissionReview",
@@ -43,9 +43,9 @@ go get github.com/chen-keinan/opa-policy-validate
   }
 }
 ```
-### OPA policy example : denyPolicy
+#### OPA policy example : denyPolicy
 
-```json
+```shell
 package example
 default deny = false
 deny {
