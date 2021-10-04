@@ -24,11 +24,10 @@ func YamlToJSON(data string) ([]byte, error) {
 	if err := yaml.Unmarshal([]byte(data), &body); err != nil {
 		return nil, err
 	}
-
-	body = convert(body)
+	bodyJSON := convert(body)
 	var b []byte
 	var err error
-	if b, err = json.Marshal(body); err != nil {
+	if b, err = json.Marshal(bodyJSON); err != nil {
 		return nil, err
 	}
 	return b, nil
