@@ -9,7 +9,7 @@ import (
 
 //Evaluator OPA evaluate interface
 type Evaluator interface {
-	EvaluatePolicy(pkgName string, policyRule []string, policy string, data string) ([]bool, error)
+	EvaluatePolicy(pkgName string, policyRule []string, policy string, data string) ([]*ValidateResult, error)
 }
 
 //policyEval opa evaluate object
@@ -23,7 +23,7 @@ func NewPolicyEval() Evaluator {
 
 //EvaluatePolicy evaluate opa policy against given json input , accept opa pkg name ,policy rule(deny/allow),policy and input data
 // return evaluation result in a bool form
-func (pe policyEval) EvaluatePolicy(pkgName string, policyRule []string, policy string, data string) ([]bool, error) {
+func (pe policyEval) EvaluatePolicy(pkgName string, policyRule []string, policy string, data string) ([]*ValidateResult, error) {
 	ctx := context.Background()
 	var inputObject interface{}
 	// try to read data as json format
@@ -59,5 +59,15 @@ func (pe policyEval) EvaluatePolicy(pkgName string, policyRule []string, policy 
 	if err != nil {
 		return nil, err
 	}
-	return []bool{res[0].Expressions[0].Value.(bool)}, nil
+	validateResult := make([]*ValidateResult, 0)
+	if len(res) > 0 {
+		validateResult = append(validateResult, &ValidateResult{Value: res[0].Expressions[0].Value.(bool), ValidateProperty: res[0].Expressions[0].Text})
+	}
+	return validateResult, nil
+}
+
+//ValidateResult opa validation results
+type ValidateResult struct {
+	Value            bool
+	ValidateProperty string
 }

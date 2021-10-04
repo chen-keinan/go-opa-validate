@@ -40,7 +40,7 @@ func Test_PolicyEval(t *testing.T) {
 				}
 			}
 			if len(got) > 0 {
-				if got[0] != tt.want {
+				if got[0].Value != tt.want {
 					t.Errorf("Test_PolicyEval() = %v, want %v", got[0], tt.want)
 				}
 			}
