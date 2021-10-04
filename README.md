@@ -64,11 +64,12 @@ package main
 import (
 	"fmt"
 	"github.com/chen-keinan/opa-policy-validate/validator"
+	"io/ioutil"
 	"os"
 )
 
-func main() {
 
+func main() {
 	data, err := ioutil.ReadFile("./example/data.json")
 	if err != nil {
 		fmt.Println(err)
@@ -79,10 +80,13 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	validateResult, err := NewPolicyEval().EvaluatePolicy("example", []string{"deny"}, string(policy), string(data))
+	validateResult, err := validator.NewPolicyEval().EvaluatePolicy("example", []string{"deny"}, string(policy), string(data))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
+	}
+	if len(validateResult) > 0 {
+		fmt.Println(fmt.Sprintf("eval result for property %v with value %v", validateResult[0].ValidateProperty, validateResult[0].Value))
 	}
 }
 ```
