@@ -47,3 +47,27 @@ func Test_PolicyEval(t *testing.T) {
 		})
 	}
 }
+
+func Test_DetectPkgName(t *testing.T) {
+	tests := []struct {
+		name   string
+		policy string
+		want   string
+	}{
+		{name: "detect pkg name exist", policy: "./fixture/pod_policy_deny", want: "example"},
+		{name: "detect pkg name not exist", policy: "./fixture/pod_policy_deny_bad", want: ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			policy, err := ioutil.ReadFile(tt.policy)
+			if err != nil {
+				t.Fatal(err)
+			}
+			pe := &policyEval{}
+			got := pe.detectPkgName(string(policy))
+			if got != tt.want {
+				t.Errorf("Test_DetectPkgName() = %v, want %v", got[0], tt.want)
+			}
+		})
+	}
+}
