@@ -1,4 +1,4 @@
-module github.com/chen-keinan/opa-policy-validate
+module github.com/chen-keinan/go-opa-validate
 
 go 1.16
 
