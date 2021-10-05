@@ -6,7 +6,7 @@
 
 # go-opa-validate
 
-opa-policy-validate is an open-source lib that evaluates OPA (open policy agent) policy against JSON or YAML data.
+go-opa-validate is an open-source lib that evaluates OPA (open policy agent) policy against JSON or YAML data.
 
 * [Installation](#installation)
 * [Usage](#usage)
