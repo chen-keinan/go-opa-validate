@@ -4,7 +4,7 @@
 [![Gitter](https://badges.gitter.im/beacon-sec/community.svg)](https://gitter.im/beacon-sec/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 <br><img src="./pkg/img/opa_img_gopher.png" width="300" alt="opa_val logo"><br>
 
-# opa-policy-validate
+# go-opa-validate
 
 opa-policy-validate is an open-source lib that evaluates OPA (open policy agent) policy against JSON or YAML data.
 
@@ -16,7 +16,7 @@ opa-policy-validate is an open-source lib that evaluates OPA (open policy agent)
 ## Installation
 
 ```shell
-go get github.com/chen-keinan/opa-policy-validate
+go get github.com/chen-keinan/go-opa-validate
 ```
 
 ## Usage 
@@ -66,7 +66,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/chen-keinan/opa-policy-validate/validator"
+	"github.com/chen-keinan/go-opa-validate/validator"
 	"io/ioutil"
 	"os"
 )
