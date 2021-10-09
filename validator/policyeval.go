@@ -1,19 +1,15 @@
 package validator
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"fmt"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
-	"io/ioutil"
-	"strings"
 )
 
 //Evaluator OPA evaluate interface
 type Evaluator interface {
-	EvaluatePolicy(evalProperty []string, policy string, data string) ([]*ValidateResult, error)
+	EvaluatePolicy(queryParam []string, policy string, data string) ([]*ValidateResult, error)
 }
 
 //policyEval opa evaluate object
@@ -27,8 +23,7 @@ func NewPolicyEval() Evaluator {
 
 //EvaluatePolicy evaluate opa policy against given json input , accept opa pkg name ,policy rule(deny/allow),policy and input data
 // return evaluation result in a bool form
-func (pe policyEval) EvaluatePolicy(evalProperty []string, policy string, data string) ([]*ValidateResult, error) {
-	pkgName := pe.detectPkgName(policy)
+func (pe policyEval) EvaluatePolicy(queryParam []string, policy string, data string) ([]*ValidateResult, error) {
 	ctx := context.Background()
 	var inputObject interface{}
 	// try to read data as json format
@@ -48,18 +43,14 @@ func (pe policyEval) EvaluatePolicy(evalProperty []string, policy string, data s
 	}
 	// Compile the module. The keys are used as identifiers in error messages.
 	compiler, err := ast.CompileModules(map[string]string{
-		fmt.Sprintf("%s.rego", pkgName): policy,
+		fmt.Sprintf("%s.rego", "eval"): policy,
 	})
 	if err != nil {
 		return nil, err
 	}
 	regoFunc := make([]func(r *rego.Rego), 0)
-	for _, pr := range evalProperty {
-		if len(pkgName) > 0 {
-			regoFunc = append(regoFunc, rego.Query(fmt.Sprintf("data.%s.%s", pkgName, pr)))
-		} else {
-			regoFunc = append(regoFunc, rego.Query(policy))
-		}
+	for _, pr := range queryParam {
+		regoFunc = append(regoFunc, rego.Query(fmt.Sprintf("data.%s", pr)))
 	}
 	regoFunc = append(regoFunc, rego.Compiler(compiler))
 	regoFunc = append(regoFunc, rego.Input(inputObject))
@@ -73,28 +64,6 @@ func (pe policyEval) EvaluatePolicy(evalProperty []string, policy string, data s
 		validateResult = append(validateResult, &ValidateResult{Value: res[0].Expressions[0].Value.(bool), ValidateProperty: res[0].Expressions[0].Text})
 	}
 	return validateResult, nil
-}
-
-func (pe policyEval) detectPkgName(policy string) string {
-	var pkgName string
-	const policyPackage = "package"
-	reader := ioutil.NopCloser(bytes.NewReader([]byte(policy)))
-	defer func() {
-		err := reader.Close()
-		if err != nil {
-			fmt.Println(err)
-		}
-	}()
-	scanner := bufio.NewScanner(reader)
-	// optionally, resize scanner's capacity for lines over 64K, see next example
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, policyPackage) {
-			pkgName = strings.TrimSpace(strings.Replace(line, policyPackage, "", -1))
-			break
-		}
-	}
-	return pkgName
 }
 
 //ValidateResult opa validation results
