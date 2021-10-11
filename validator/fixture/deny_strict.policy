@@ -1,8 +1,8 @@
 package itsio
-default allow = false
-allow {
+allow :={"name":namespace_name,"allow_policy":allow_policy} {
+	namespace_name:= input.items[0].metadata.namespace
 	some i
 	input.items[i].kind == "PeerAuthentication"
 	mtlsMode := input.items[i].spec.mtls.mode
-	mtlsMode ==  "STRICT"
- }
+	allow_policy = mtlsMode ==  "STRICT"
+  }

@@ -61,13 +61,12 @@ func (pe policyEval) EvaluatePolicy(queryParam []string, policy string, data str
 	}
 	validateResult := make([]*ValidateResult, 0)
 	if len(res) > 0 {
-		validateResult = append(validateResult, &ValidateResult{Value: res[0].Expressions[0].Value.(bool), ValidateProperty: res[0].Expressions[0].Text})
+		validateResult = append(validateResult, &ValidateResult{ExpressionValue: res[0].Expressions})
 	}
 	return validateResult, nil
 }
 
 //ValidateResult opa validation results
 type ValidateResult struct {
-	Value            bool
-	ValidateProperty string
+	ExpressionValue []*rego.ExpressionValue
 }
