@@ -89,7 +89,7 @@ func main() {
 		os.Exit(1)
 	}
 	if len(validateResult) > 0 {
-		fmt.Println(fmt.Sprintf("eval result for property %v with value %v", validateResult[0].ValidateProperty, validateResult[0].Value))
+		fmt.Println(fmt.Sprintf("eval result for property %v with value %v",validateResult[0].ExpressionValue[0].Text ,validateResult[0].ExpressionValue[0].Value))
 	}
 }
 ```
