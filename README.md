@@ -16,7 +16,7 @@ go-opa-validate is an open-source lib that evaluates OPA (open policy agent) pol
 ## Installation
 
 ```shell
-go get github.com/chen-keinan/go-opa-validate
+go install github.com/chen-keinan/go-opa-validate
 ```
 
 ## Usage 
