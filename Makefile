@@ -13,7 +13,7 @@ lint:
 tidy:
 	$(GOMOD) tidy -v
 test:
-	$(GOCMD) get github.com/golang/mock/mockgen@latest
+	$(GOCMD) install github.com/golang/mock/mockgen@latest
 	$(GOCMD) install -v github.com/golang/mock/mockgen
 	export PATH=$GOPATH/bin:$PATH;
 	$(GOCMD) generate ./...
