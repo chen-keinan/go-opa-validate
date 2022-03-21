@@ -42,15 +42,17 @@ func (pe policyEval) EvaluatePolicy(queryParam []string, policy string, data str
 		}
 	}
 	// Compile the module. The keys are used as identifiers in error messages.
+	policyKey := fmt.Sprintf("%s.rego", "eval")
 	compiler, err := ast.CompileModules(map[string]string{
-		fmt.Sprintf("%s.rego", "eval"): policy,
+		policyKey: policy,
 	})
 	if err != nil {
 		return nil, err
 	}
+	packageName := compiler.Modules[policyKey].Package.Path.String()
 	regoFunc := make([]func(r *rego.Rego), 0)
 	for _, pr := range queryParam {
-		regoFunc = append(regoFunc, rego.Query(fmt.Sprintf("data.%s", pr)))
+		regoFunc = append(regoFunc, rego.Query(fmt.Sprintf("%s.%s", packageName, pr)))
 	}
 	regoFunc = append(regoFunc, rego.Compiler(compiler))
 	regoFunc = append(regoFunc, rego.Input(inputObject))
