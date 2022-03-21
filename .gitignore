@@ -16,3 +16,4 @@
 coverage.md
 mock_*.go
 *.html
+lint.xml

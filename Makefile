@@ -5,6 +5,7 @@ GOMOCKS=$(GOCMD) generate ./...
 GOMOD=$(GOCMD) mod
 GOTEST=$(GOCMD) test
 
+
 all:
 	$(info  "completed running make file for go-opa-validate")
 fmt:
@@ -14,7 +15,7 @@ lint:
 	$(GOCMD) install -v github.com/golang/mock/mockgen
 	export PATH=$HOME/go/bin:$PATH
 	$(GOMOCKS)
-	lint.sh
+	./lint.sh
 tidy:
 	$(GOMOD) tidy -v
 test:
