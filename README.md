@@ -83,7 +83,7 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	validateResult, err := validator.NewPolicyEval().EvaluatePolicy([]string{"example.deny"}, string(policy), string(data))
+	validateResult, err := validator.NewPolicyEval().EvaluatePolicy([]string{"deny"}, string(policy), string(data))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
